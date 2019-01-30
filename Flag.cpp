@@ -1,13 +1,10 @@
 #include <cstdio>
 #include "common_flags.h"
 
-#define _fread(x, y)     fread(x, sizeof(x), 1, y)
-#define _fwrite(x, y)   fwrite(x, sizeof(x), 1, y)
-
 class Flag {
 private:
-    FILE *flag_f;
     int buffer[8];
+    FILE *flag_f;
 
 public:
     Flag(FILE *f) {
@@ -18,26 +15,27 @@ public:
         fclose(flag_f);
     }
 
-    void get_data() {
+    int *get_data() {
         rewind(flag_f);
-        _fread(buffer, flag_f);
-    }
-
-    void set_stat(int self, int stat, int id) {
-        _rewind();
-        int b[] = {self, stat, id, 0, 0, 0, 0, 0};
-        fwrite(b, sizeof(b), 1, flag_f);
-    }
-
-    void set_stat(int self, int stat) {
-        _rewind();
-        int b[] = {self, stat, 0, 0, 0, 0, 0, 0};
-        fwrite(b, sizeof(b), 1, flag_f);
+        for (size_t i = 0; i < 8; i++)
+            fscanf(flag_f, "%d", &buffer[i]);
+        return buffer;
     }
 
     void set_stat(int b[8]) {
         _rewind();
-        fwrite(b, sizeof(b), 1, flag_f);
+        for (size_t i = 0; i < 8; i++)
+            fprintf(flag_f, "%d ", b[i]);
+    }
+
+    void set_stat(int self, int stat, int id) {
+        int b[] = {self, stat, id, 0, 0, 0, 0, 0};
+        set_stat(b);
+    }
+
+    void set_stat(int self, int stat) {
+        int b[] = {self, stat, 0, 0, 0, 0, 0, 0};
+        set_stat(b);
     }
 
     int get_requestor_id() {
@@ -46,6 +44,14 @@ public:
 
     bool is_requested() {
         return buffer[1] == REQUESTED;
+    }
+
+    bool is_answer() {
+        return buffer[1] == ANSWERED;
+    }
+
+    bool is_acquired() {
+        return buffer[1] == ACQUIRED;
     }
 
     void _rewind() {

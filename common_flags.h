@@ -20,15 +20,15 @@
         INPUT,
         CORE,
         OUTPUT,
+        FLAG,
         NULLIUS
     };
-
-    char _cmp[5][12] = {
+    char _cmp[6][12] = {
         "LINE",
         "INPUT",
         "CORE",
         "OUTPUT",
+        "FLAG",
         "NULLIUS"
     };
-
 #endif
