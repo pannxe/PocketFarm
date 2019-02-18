@@ -17,7 +17,7 @@ class Flag():
     def set_stat(self, data):
         self.rewind()
         for i in range(0, 8):
-            self.flag_f.write("{0} ".format(data[i]))
+            self.flag_f.write("{0} ".format(data[i], end=""))
 
     def get_requestor_id(self):
         if not self.buffer:

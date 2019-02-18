@@ -4,53 +4,80 @@ import paho.mqtt.client as mqtt
 import json
 
 
-r_flag = Flag(open("request.flg", "r+"))
-a_flag = Flag(open("answer.flg", "r"))
-b_flag = Flag(open("busy.flg", "r"))
-
-
 def on_message(client, obj, msg):
-    if msg.payload == "stat":
+    print("Got a payload: ", end="")
+    cmd = msg.payload.decode("utf-8")
+    print(cmd)
+    cmd = cmd.lower()
+    if cmd == "stat":
         send_stat()
+    elif cmd == "edit":
+        print("edit\n  Applying new configuration")
+        m_in = json.loads(cmd)
+        f = open("now_setting.conf", "w")
+        f.write("{0} {1} {2} {3}".format(
+            m_in["temp"], m_in["humi"], m_in["mois"], m_in["lumi"]
+            )
+        )
+        f.close()
+        print("Done\n")
 
 
 def send_stat():
-    global mqttc
+    print("Waiting for answer... ")
     buffer = get_answer()
+    print("Finished getting answer, sending data to Line... ",)
     broker_out = {
         "in_humi": buffer[2], "in_temp": buffer[3], "out_humi": buffer[4],
         "out_temp": buffer[5], "mois": buffer[6], "lumi": buffer[7]
     }
+    print(str(buffer))
     data_out = json.dumps(broker_out)
     mqttc.publish("/test2", data_out)
+    print("Finished, Waiting for the next payload\n")
 
 
 def get_answer():
-    global r_flag, a_flag
+    r_flag = Flag(open("request.flg", "r+"))
+    a_flag = Flag(open("answer.flg", "r+"))
+    b_flag = Flag(open("busy.flg", "r+"))
 
     # Wait until ready
+    print("Getting b_flag data... ", end="")
     b_flag.get_data()
     while b_flag.is_busy():
-        b_flag.get_data
-
+        b_flag.get_data()
+    print("Done")
     # Request data
+    print("Set r_flag to REQUESTED... ", end="")
     r_flag.set_stat([cf.Comp.LINE, cf.Stat.REQUESTED, 0, 0, 0, 0, 0, 0])
+    print("Done")
     while True:
+        print("  Getting a_flag data... ")
         a_flag.get_data()
+        print("    got --> " + str(a_flag.buffer))
+        print("  Getting r_flag data... ")
         r_flag.get_data()
-        if a_flag.is_answered() and not r_flag.is_acquired() and r_flag.buffer:
+        print("    got --> " + str(r_flag.buffer))
+        if a_flag.is_answered() and r_flag.buffer:
+            print("  Set r_flag to ACQUIRED... ", end="")
             r_flag.set_stat([cf.Comp.LINE, cf.Stat.ACQUIRED, 0, 0, 0, 0, 0, 0])
-            return a_flag.buffer
+            print("Done")
+            d_flag = Flag(open("sensor_data.flg", "r"))
+            buffer = d_flag.get_data()
+            del r_flag
+            del a_flag
+            del b_flag
+            return buffer
 
 
-def main():
-    global mqttc
-    mqttc = mqtt.Client()
-    mqttc.on_message = on_message
-    mqttc.username_pw_set("brsiutlc", "Rw4rcSFm_gCL")
-    mqttc.connect('m15.cloudmqtt.com', 17711)
-    mqttc.subscribe("/test1", 0)
-    mqttc.loop_forever
-
-
-main()
+print("Pocket Farm's")
+print("LINE COMMUNICATION MODULE\nVERSION 1.0.0\n_________________________\n")
+print("Initialising... ", end="")
+mqttc = mqtt.Client()
+mqttc.on_message = on_message
+mqttc.username_pw_set("brsiutlc", "Rw4rcSFm_gCL")
+mqttc.connect('m15.cloudmqtt.com', 17711)
+mqttc.subscribe("/test1", 0)
+print("Done\nWaiting for Line payload... \n")
+mqttc.loop_forever()

@@ -7,7 +7,7 @@ private:
     FILE *flag_f;
 
 public:
-    Flag(FILE *f) {
+    Flag(FILE* f) {
         flag_f = f;
     }
 
@@ -46,7 +46,7 @@ public:
         return buffer[1] == REQUESTED;
     }
 
-    bool is_answer() {
+    bool is_answered() {
         return buffer[1] == ANSWERED;
     }
 
