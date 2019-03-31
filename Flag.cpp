@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <string>
 #include "common_flags.h"
 
 class Flag {
@@ -7,16 +8,20 @@ private:
     FILE *flag_f;
 
 public:
-    Flag(FILE* f) {
-        flag_f = f;
+    Flag(std::string a, std::string b) {
+        flag_f = fopen(a.c_str(), b.c_str());
     }
 
     ~Flag() {
         fclose(flag_f);
     }
 
+    void refreash(std::string a, std::string b) {
+        freopen(a.c_str(), b.c_str(), flag_f);
+    }
+
     int *get_data() {
-        rewind(flag_f);
+        _rewind();
         for (size_t i = 0; i < 8; i++)
             fscanf(flag_f, "%d", &buffer[i]);
         return buffer;

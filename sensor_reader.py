@@ -17,13 +17,13 @@ def read_sensor():
 
 
 def ready_stat():
-    ia_flag = Flag(open("ians.flg", "w"))
+    ia_flag = Flag(open("ians.flg", "r+"))
     ia_flag.set_stat([cf.Comp.INPUT, cf.Stat.READY, 0, 0, 0, 0, 0, 0])
     del ia_flag
 
 
 def write_stat():
-    ia_flag = Flag(open("ians.flg", "w"))
+    ia_flag = Flag(open("ians.flg", "r+"))
     ia_flag.set_stat([cf.Comp.INPUT, cf.Stat.ANSWERED, 0, 0, 0, 0, 0, 0])
     del ia_flag
 
@@ -31,7 +31,7 @@ def write_stat():
 print("Pocket Farm's")
 print("SENSOR READER MODULE\nVERSION 1.0.0")
 print("_________________________\n")
-ir_flag = Flag(open("ireq.flg", "r"))
+ir_flag = Flag(open("ireq.flg", "r+"))
 first = False
 while True:
     ir_flag.get_data()

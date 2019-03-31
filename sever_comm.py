@@ -11,14 +11,13 @@ def on_message(client, obj, msg):
     cmd = cmd.lower()
     if cmd == "stat":
         send_stat()
-    elif cmd == "edit":
+    else:
         print("edit\n  Applying new configuration")
         m_in = json.loads(cmd)
         f = open("now_setting.conf", "w")
-        f.write("{0} {1} {2} {3}".format(
+        f.write("{0} {1} {2} {3}".format (
             m_in["temp"], m_in["humi"], m_in["mois"], m_in["lumi"]
-            )
-        )
+        ))
         f.close()
         print("Done\n")
 
@@ -39,7 +38,6 @@ def send_stat():
 
 def get_answer():
     r_flag = Flag(open("request.flg", "r+"))
-    a_flag = Flag(open("answer.flg", "r+"))
     b_flag = Flag(open("busy.flg", "r+"))
 
     # Wait until ready
@@ -53,6 +51,7 @@ def get_answer():
     r_flag.set_stat([cf.Comp.LINE, cf.Stat.REQUESTED, 0, 0, 0, 0, 0, 0])
     print("Done")
     while True:
+        a_flag = Flag(open("answer.flg", "r+"))
         print("  Getting a_flag data... ")
         a_flag.get_data()
         print("    got --> " + str(a_flag.buffer))
@@ -69,6 +68,8 @@ def get_answer():
             del a_flag
             del b_flag
             return buffer
+        a_flag.flag_f.close()
+        a_flag.flag_f = open("request.flg", "r+")
 
 
 print("Pocket Farm's")
